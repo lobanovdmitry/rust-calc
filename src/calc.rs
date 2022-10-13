@@ -1,30 +1,27 @@
-use std::{collections::HashMap, fmt::Debug};
-
+use crate::{Calc, CalcErr};
 use regex::Regex;
-
-pub trait Calc {
-    fn new() -> Self;
-
-    fn calc(&self, input: &str) -> Result<f64, CalcErr>;
-}
-
-#[derive(Debug)]
-pub struct CalcErr(String);
+use std::collections::HashMap;
 
 pub struct SimpleCalc {
-    operations: HashMap<&'static str, u8>, // operation with priorities
+    pub conf: CalcConf,
 }
 
 impl Calc for SimpleCalc {
-    fn new() -> Self {
-        SimpleCalc {
-            operations: HashMap::from([("+", 0), ("-", 0), ("*", 1), ("/", 1), ("^", 2)]),
-        }
-    }
-
     fn calc(&self, input: &str) -> Result<f64, CalcErr> {
         let result = self.convert_to_rpn(input)?;
         self.calc_from_rpn(result)
+    }
+}
+
+pub struct CalcConf {
+    operations: HashMap<&'static str, u8>, // operation with priorities
+}
+
+impl CalcConf {
+    pub fn new() -> Self {
+        Self {
+            operations: HashMap::from([("+", 0), ("-", 0), ("*", 1), ("/", 1), ("^", 2)]),
+        }
     }
 }
 
@@ -65,7 +62,7 @@ impl SimpleCalc {
         }
         let mut result: CalcStack = vec![];
         let mut stack: CalcStack = vec![];
-        let number_regex = Regex::new("^(-?[1-9]\\d*|-?0)(\\.\\d+)?").unwrap();
+        let number_regex = Regex::new("^(-?[1-9]\\d*|-?0)(\\.\\d*)?").unwrap();
         let mut i = 0;
         while i < input.len() {
             let first_char = &input[i..i + 1];
@@ -108,14 +105,14 @@ impl SimpleCalc {
             // processing binary infix functions
             if ["+", "-", "*", "/", "^"].contains(&first_char) {
                 loop {
-                    let mut need_push = false;
+                    let need_push;
                     if let Some(top) = stack.last() {
                         match top {
                             CalcExprItem::UniOp(_, _) => {
                                 need_push = true;
                             }
                             CalcExprItem::BinOp(x, _) => {
-                                if self.operations.get(x) >= self.operations.get(&first_char) {
+                                if self.conf.operations.get(x) >= self.conf.operations.get(&first_char) {
                                     need_push = true;
                                 } else {
                                     break;
@@ -187,8 +184,12 @@ impl SimpleCalc {
                     stack.push(op(arg));
                 }
                 CalcExprItem::BinOp(_, op) => {
-                    let arg_2 = stack.pop().ok_or(CalcErr::new("Illegal state: binary operation args invalid."))?;
-                    let arg_1 = stack.pop().ok_or(CalcErr::new("Illegal state: binary operation args invalid."))?;
+                    let arg_2 = stack
+                        .pop()
+                        .ok_or(CalcErr::new("Illegal state: binary operation args invalid."))?;
+                    let arg_1 = stack
+                        .pop()
+                        .ok_or(CalcErr::new("Illegal state: binary operation args invalid."))?;
                     stack.push(op(arg_1, arg_2));
                 }
                 CalcExprItem::Number(value) => stack.push(value),
@@ -203,27 +204,5 @@ impl SimpleCalc {
             )));
         }
         Ok(result)
-    }
-}
-
-#[cfg(test)]
-mod test {
-
-    use super::*;
-
-    #[test]
-    fn test_calc_simple() {
-        let input = "3 + 4 * 2 / (1 - 5) * 2";
-        let calc = SimpleCalc::new();
-        let rev_input = calc.convert_to_rpn(input).unwrap();
-        assert_eq!(calc.calc_from_rpn(rev_input).unwrap(), -1.0);
-    }
-
-    #[test]
-    fn test_calc_minus1() {
-        let input = "-1+1";
-        let calc = SimpleCalc::new();
-        let rev_input = calc.convert_to_rpn(input).unwrap();
-        assert_eq!(calc.calc_from_rpn(rev_input).unwrap(), 0.0);
     }
 }
