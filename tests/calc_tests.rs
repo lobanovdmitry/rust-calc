@@ -16,12 +16,13 @@ macro_rules! calc_tests {
 }
 
 calc_tests! {
-    test_1: ("3 + 4 * 2 / (1 - 5) * 2", -1.0),
-    test_2: ("1+1", 2.0),
-    test_3: ("-1+1", 0.0),
-    test_4: ("-1*2", -2.0),
-    test_sin: ("1-sin(90)", 0.0),
-    test_cos: ("cos(90)+1", 1.0),
-    test_tan: ("tan(0)", 0.0),
-    test_incomplete_decimals: ("10.0+10.", 20.0),
+    simple_add: ("2+2", 4.0),
+    complex: ("3 + 4 * 2 / (1 - 5) * 2", -1.0),
+    add_first_neg: ("-1+1", 0.0),
+    mult_first_neg: ("-1*2", -2.0),
+    simple_sin: ("1-sin(90)", 0.0),
+    simple_cos: ("cos(90)+1", 1.0),
+    simple_tan: ("tan(0)", 0.0),
+    incomplete_decimals: ("10.0+10.", 20.0),
+    simpl_exp: ("2^10", 1024.0),
 }
