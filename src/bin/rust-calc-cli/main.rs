@@ -4,7 +4,7 @@ use rust_calc::Calc;
 
 fn main() {
     println!("##################################");
-    println!("###############CALC###############");
+    println!("###           CALC           #####");
     println!("##################################");
     let calc = rust_calc::new();
     loop {

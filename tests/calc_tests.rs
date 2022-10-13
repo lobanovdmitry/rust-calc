@@ -23,4 +23,5 @@ calc_tests! {
     test_sin: ("1-sin(90)", 0.0),
     test_cos: ("cos(90)+1", 1.0),
     test_tan: ("tan(0)", 0.0),
+    test_incomplete_decimals: ("10.0+10.", 20.0),
 }

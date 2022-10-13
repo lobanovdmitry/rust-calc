@@ -62,7 +62,7 @@ impl SimpleCalc {
         }
         let mut result: CalcStack = vec![];
         let mut stack: CalcStack = vec![];
-        let number_regex = Regex::new("^(-?[1-9]\\d*|-?0)(\\.\\d+)?").unwrap();
+        let number_regex = Regex::new("^(-?[1-9]\\d*|-?0)(\\.\\d*)?").unwrap();
         let mut i = 0;
         while i < input.len() {
             let first_char = &input[i..i + 1];
