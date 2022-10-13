@@ -105,7 +105,7 @@ impl SimpleCalc {
             // processing binary infix functions
             if ["+", "-", "*", "/", "^"].contains(&first_char) {
                 loop {
-                    let mut need_push = false;
+                    let need_push;
                     if let Some(top) = stack.last() {
                         match top {
                             CalcExprItem::UniOp(_, _) => {
