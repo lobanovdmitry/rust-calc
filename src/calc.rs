@@ -35,6 +35,8 @@ enum CalcExprItem {
     CloseBracket,
 }
 
+use CalcExprItem::*;
+
 impl PartialEq for CalcExprItem {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
@@ -103,13 +105,13 @@ impl SimpleCalc {
         match next_char {
             " " | "\t" => Ok(1),
             "(" => {
-                stack.push(CalcExprItem::OpenBracket);
+                stack.push(OpenBracket);
                 Ok(1)
             }
             ")" => {
                 loop {
                     match stack.pop() {
-                        Some(CalcExprItem::OpenBracket) => break,
+                        Some(OpenBracket) => break,
                         Some(x) => result.push(x),
                         None => return Err(CalcErr::new("brackets are not alignt in the expression!!!")),
                     }
@@ -126,7 +128,7 @@ impl SimpleCalc {
             let number = num_str
                 .parse::<f64>()
                 .map_err(|e| CalcErr::new(&format!("Failed to parse number: {} err={}", m.as_str(), e)))?;
-            result.push(CalcExprItem::Number(number));
+            result.push(Number(number));
             Ok(num_str.len())
         } else {
             Ok(0)
@@ -143,10 +145,10 @@ impl SimpleCalc {
             loop {
                 if let Some(top) = stack.last() {
                     match top {
-                        CalcExprItem::UniOp(_, _) => {
+                        UniOp(_, _) => {
                             stack.pop().map(|x| result.push(x));
                         }
-                        CalcExprItem::BinOp(x, _) => {
+                        BinOp(x, _) => {
                             let top_op_priority = self.conf.operations.get(x);
                             let cur_op_priority = self.conf.operations.get(&next_char);
                             if top_op_priority >= cur_op_priority {
@@ -162,11 +164,11 @@ impl SimpleCalc {
                 }
             }
             match next_char {
-                "+" => stack.push(CalcExprItem::BinOp("+", Box::new(|x, y| x + y))),
-                "-" => stack.push(CalcExprItem::BinOp("-", Box::new(|x, y| x - y))),
-                "*" => stack.push(CalcExprItem::BinOp("*", Box::new(|x, y| x * y))),
-                "/" => stack.push(CalcExprItem::BinOp("/", Box::new(|x, y| x / y))),
-                "^" => stack.push(CalcExprItem::BinOp("^", Box::new(|x, y| x.powf(y)))),
+                "+" => stack.push(BinOp("+", Box::new(|x, y| x + y))),
+                "-" => stack.push(BinOp("-", Box::new(|x, y| x - y))),
+                "*" => stack.push(BinOp("*", Box::new(|x, y| x * y))),
+                "/" => stack.push(BinOp("/", Box::new(|x, y| x / y))),
+                "^" => stack.push(BinOp("^", Box::new(|x, y| x.powf(y)))),
                 _ => panic!("why we here then???"),
             }
             Ok(1)
@@ -180,16 +182,16 @@ impl SimpleCalc {
         const COS: &str = "cos";
         const TAN: &str = "tan";
         let (item, len) = if input.starts_with(SIN) {
-            let sin = |x: f64| SimpleCalc::rad2degree(x).sin();
-            let sin_op = CalcExprItem::UniOp(SIN, Box::new(sin));
+            let sin = |x: f64| Self::rad2degree(x).sin();
+            let sin_op = UniOp(SIN, Box::new(sin));
             (sin_op, 3)
         } else if input.starts_with(COS) {
-            let cos = |x: f64| SimpleCalc::rad2degree(x).cos();
-            let cos_op = CalcExprItem::UniOp(COS, Box::new(cos));
+            let cos = |x: f64| Self::rad2degree(x).cos();
+            let cos_op = UniOp(COS, Box::new(cos));
             (cos_op, 3)
         } else if input.starts_with(TAN) {
-            let tan = |x: f64| SimpleCalc::rad2degree(x).tan();
-            let tan_op = CalcExprItem::UniOp(TAN, Box::new(tan));
+            let tan = |x: f64| Self::rad2degree(x).tan();
+            let tan_op = UniOp(TAN, Box::new(tan));
             (tan_op, 3)
         } else {
             return Ok(0);
@@ -208,16 +210,16 @@ impl SimpleCalc {
         let mut stack = Vec::<f64>::new();
         for item in rpn_vec {
             match item {
-                CalcExprItem::UniOp(_, op) => {
+                UniOp(_, op) => {
                     let arg = stack.pop().ok_or(CalcErr::new("No arg for unary operation."))?;
                     stack.push(op(arg));
                 }
-                CalcExprItem::BinOp(_, op) => {
+                BinOp(_, op) => {
                     let arg_2 = stack.pop().ok_or(CalcErr::new("Binary operation args invalid."))?;
                     let arg_1 = stack.pop().ok_or(CalcErr::new("Binary operation args invalid."))?;
                     stack.push(op(arg_1, arg_2));
                 }
-                CalcExprItem::Number(value) => {
+                Number(value) => {
                     stack.push(value);
                 }
                 _ => {
