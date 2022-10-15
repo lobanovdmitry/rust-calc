@@ -155,14 +155,15 @@ fn parse_binary_op(next_char: &str, stack: &mut CalcStack, result: &mut CalcStac
                 break;
             }
         }
-        match next_char {
-            "+" => stack.push(BinOp("+", Box::new(|x, y| x + y))),
-            "-" => stack.push(BinOp("-", Box::new(|x, y| x - y))),
-            "*" => stack.push(BinOp("*", Box::new(|x, y| x * y))),
-            "/" => stack.push(BinOp("/", Box::new(|x, y| x / y))),
-            "^" => stack.push(BinOp("^", Box::new(|x, y| x.powf(y)))),
-            _ => panic!("why we here then???"),
-        }
+        let bin_op = match next_char {
+            "+" => BinOp("+", Box::new(|x, y| x + y)),
+            "-" => BinOp("-", Box::new(|x, y| x - y)),
+            "*" => BinOp("*", Box::new(|x, y| x * y)),
+            "/" => BinOp("/", Box::new(|x, y| x / y)),
+            "^" => BinOp("^", Box::new(|x, y| x.powf(y))),
+            _ => panic!("Operation is not supported {}.", next_char),
+        };
+        stack.push(bin_op);
         Ok(1)
     } else {
         Ok(0)
