@@ -35,11 +35,11 @@ use CalcExprItem::*;
 impl PartialEq for CalcExprItem {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Self::UniOp(x, _), Self::UniOp(y, _)) => x == y,
-            (Self::BinOp(x, _), Self::BinOp(y, _)) => x == y,
-            (Self::Number(x), Self::Number(y)) => x == y,
-            (Self::OpenBracket, Self::OpenBracket) => true,
-            (Self::CloseBracket, Self::CloseBracket) => true,
+            (UniOp(x, _), UniOp(y, _)) => x == y,
+            (BinOp(x, _), BinOp(y, _)) => x == y,
+            (Number(x), Number(y)) => x == y,
+            (OpenBracket, OpenBracket) => true,
+            (CloseBracket, CloseBracket) => true,
             _ => false,
         }
     }
