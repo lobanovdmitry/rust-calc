@@ -1,11 +1,9 @@
-use calc::CalcConf;
-
 mod calc;
 
 /// Creates new calculator.
 /// Its thread safe and can be reused multiptle times.
 pub fn new() -> impl Calc {
-    calc::SimpleCalc { conf: CalcConf::new() }
+    calc::SimpleCalc
 }
 
 /// Basic calc trait.
