@@ -10,13 +10,14 @@ fn main() {
     loop {
         print!(">>> ");
         stdout().flush().unwrap();
-        let mut user_input = String::new();
-        stdin().read_line(&mut user_input).unwrap();
-        let input = user_input.trim();
-        match calc.calc(input) {
-            Ok(result) => println!("{result}"),
-            Err(e) => eprintln!("ERROR: {:?}", e.0),
+        let mut buffer = String::new();
+        stdin().read_line(&mut buffer).unwrap();
+        let user_input = buffer.trim();
+        if !user_input.is_empty() {
+            match calc.calc(user_input) {
+                Ok(result) => println!("{result}"),
+                Err(err) => println!("Error: {:?}", err.msg),
+            }
         }
-        stdout().flush().unwrap();
     }
 }

@@ -1,7 +1,7 @@
 mod calc;
 
 /// Creates new calculator.
-/// Its thread safe and can be reused multiptle times.
+/// It is thread safe and can be reused multiptle times.
 pub fn new() -> impl Calc {
     calc::SimpleCalc
 }
@@ -13,4 +13,6 @@ pub trait Calc {
 
 /// Calculation error type.
 #[derive(Debug)]
-pub struct CalcErr(pub String);
+pub struct CalcErr {
+    pub msg: String,
+}

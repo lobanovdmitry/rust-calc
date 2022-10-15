@@ -47,7 +47,7 @@ impl PartialEq for CalcExprItem {
 
 impl CalcErr {
     fn new(text: &str) -> CalcErr {
-        Self(text.to_string())
+        Self { msg: text.to_string() }
     }
 }
 
