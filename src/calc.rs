@@ -53,7 +53,10 @@ impl CalcErr {
 
 type CalcStack = Vec<CalcExprItem>;
 
-/// Converts input string into vection of expression in Reverse Polish Notation.
+/// Converts input string into vector of expressions in Reverse Polish Notation.
+/// For example:
+///     input: 1+2*3
+///     result: vec[Number(1), Number(2), Number(3), BinOp(*), BinOp(+)]
 fn convert_to_rpn(input: &str) -> Result<CalcStack, CalcErr> {
     if !input.is_ascii() {
         return Err(CalcErr::new("Input must contain only ascii characters!"));
@@ -84,10 +87,10 @@ fn convert_to_rpn(input: &str) -> Result<CalcStack, CalcErr> {
             i += len;
             continue;
         }
-        return Err(CalcErr::new(&format!("Can't process {i}")));
+        return Err(CalcErr::new(&format!("Can't process at {i}")));
     }
     while let Some(ch) = stack.pop() {
-        if ch == CalcExprItem::CloseBracket || ch == CalcExprItem::OpenBracket {
+        if ch == CloseBracket || ch == OpenBracket {
             return Err(CalcErr::new("Brackets don't match in the expression."));
         }
         result.push(ch);
@@ -192,6 +195,9 @@ fn rad2degree(x: f64) -> f64 {
 }
 
 /// Calculates final number based on Reverse Polish Notation.
+/// For example:
+///     input: vec[Number(1), Number(2), Number(3), BinOp(*), BinOp(+)]
+///     result: Ok(7)
 fn calc_from_rpn(rpn_vec: CalcStack) -> Result<f64, CalcErr> {
     assert!(!rpn_vec.is_empty(), "rpc_vec must be non empty!");
     let mut stack = Vec::<f64>::new();
