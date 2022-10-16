@@ -6,7 +6,8 @@ use std::collections::HashMap;
 lazy_static! {
     static ref OPERATIONS: HashMap<&'static str, u8> =
         HashMap::from([("+", 0), ("-", 0), ("*", 1), ("/", 1), ("^", 2)]);
-    static ref NUMBER_REGEX: Regex = Regex::new("^(-?[1-9]\\d*|-?0)(\\.\\d*)?").unwrap();
+    static ref NUMBER_REGEX: Regex = Regex::new("^([1-9]\\d*|0)(\\.\\d*)?").unwrap();
+    static ref NEG_NUMBER_REGEX: Regex = Regex::new("^(-?[1-9]\\d*|-?0)(\\.\\d*)?").unwrap();
 }
 const SIN: &str = "sin";
 const COS: &str = "cos";
@@ -64,27 +65,50 @@ fn convert_to_rpn(input: &str) -> Result<CalcStack, CalcErr> {
     let mut stack: CalcStack = vec![];
     let mut result: CalcStack = vec![];
     let mut i = 0;
+    let mut expect_neg_num = true;
     while i < input.len() {
         let next_char = &input[i..i + 1];
-        let len = parse_prefix(next_char, &mut stack, &mut result)?;
+        let len = match next_char {
+            " " | "\t" => Ok(1),
+            "(" => {
+                stack.push(OpenBracket);
+                expect_neg_num = true;
+                Ok(1)
+            }
+            ")" => {
+                loop {
+                    match stack.pop() {
+                        Some(OpenBracket) => break,
+                        Some(x) => result.push(x),
+                        None => return Err(CalcErr::new("brackets are not alignt in the expression!!!")),
+                    }
+                }
+                expect_neg_num = false;
+                Ok(1)
+            }
+            _ => Ok(0),
+        }?;
         if len > 0 {
             i += len;
             continue;
         }
         let prefix = &input[i..];
-        let len = parse_number(prefix, &mut result)?;
+        let len = parse_number(prefix, &mut result, expect_neg_num)?;
         if len > 0 {
             i += len;
+            expect_neg_num = false;
             continue;
         }
         let len = parse_binary_op(next_char, &mut stack, &mut result)?;
         if len > 0 {
             i += len;
+            expect_neg_num = false;
             continue;
         }
         let len = parse_unary_op(prefix, &mut stack)?;
         if len > 0 {
             i += len;
+            expect_neg_num = true;
             continue;
         }
         return Err(CalcErr::new(&format!("Can't process at {i}")));
@@ -98,29 +122,9 @@ fn convert_to_rpn(input: &str) -> Result<CalcStack, CalcErr> {
     Ok(result)
 }
 
-fn parse_prefix(next_char: &str, stack: &mut CalcStack, result: &mut CalcStack) -> Result<usize, CalcErr> {
-    match next_char {
-        " " | "\t" => Ok(1),
-        "(" => {
-            stack.push(OpenBracket);
-            Ok(1)
-        }
-        ")" => {
-            loop {
-                match stack.pop() {
-                    Some(OpenBracket) => break,
-                    Some(x) => result.push(x),
-                    None => return Err(CalcErr::new("brackets are not alignt in the expression!!!")),
-                }
-            }
-            Ok(1)
-        }
-        _ => Ok(0),
-    }
-}
-
-fn parse_number(input: &str, result: &mut CalcStack) -> Result<usize, CalcErr> {
-    if let Some(m) = NUMBER_REGEX.find(input) {
+fn parse_number(input: &str, result: &mut CalcStack, exp_neg_num: bool) -> Result<usize, CalcErr> {
+    let num_regex: &Regex = if exp_neg_num { &NEG_NUMBER_REGEX } else { &NUMBER_REGEX };
+    if let Some(m) = num_regex.find(input) {
         let num_str = &input[0..m.end()];
         let number = num_str
             .parse::<f64>()

@@ -17,6 +17,7 @@ macro_rules! calc_tests {
 
 calc_tests! {
     simple_add: ("2+2", 4.0),
+    simple_substract: ("10-1", 9.0),
     complex: ("3 + 4 * 2 / (1 - 5) * 2", -1.0),
     add_first_neg: ("-1+1", 0.0),
     mult_first_neg: ("-1*2", -2.0),
